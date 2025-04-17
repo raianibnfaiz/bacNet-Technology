@@ -26,7 +26,7 @@ def main():
                             "192.168.50.58:53970 analogInput "+id+" presentValue")
                         # value = bacnet.read(
                         #     "192.168.50.58:52134 analogInput "+id+" presentValue")
-                        print(f"Binary input {id} value: {value}")
+                        print(f"Aanalog input {id} value: {value}")
                         value = str(value)
                         data["Analog_input"+id] = value
                     except Exception as e:
