@@ -4,36 +4,56 @@ import time
 import sys
 
 # Data dictionary to store values
-data = {}
+data = {
+    "local_device": {},
+    "remote_device": {}
+}
 
 def main():
     try:
         # Create a bacnet connection with error handling
-        bacnet = BAC0.lite(ip="192.168.50.58/24", port=47809)
+        # Use your IP address for the network connection
+        bacnet = BAC0.lite(ip="192.168.151.186/24", port=47809)
         print("BAC0 connection established successfully")
         
         # Add a brief pause to ensure network is ready
         time.sleep(2)
         
+        # Define simulator details
+        local_simulator = {
+            "address": "192.168.151.186:58011",
+            "name": "local_device"
+        }
+        
+        remote_simulator = {
+            "address": "192.168.151.24:58956",
+            "name": "remote_device"
+        }
+        
+        simulators = [local_simulator, remote_simulator]
+        
         while True:
             try:
-                # Reading 3 Objects from the Bacnet Simulator
-                for x in range(0, 3):
-                    id = str(x)
-                    # Connect to the BACnet simulator using the IP address and port number
-                    try:
-                        value = bacnet.read(
-                            "192.168.50.58:53970 analogInput "+id+" presentValue")
-                        # value = bacnet.read(
-                        #     "192.168.50.58:52134 analogInput "+id+" presentValue")
-                        print(f"Aanalog input {id} value: {value}")
-                        value = str(value)
-                        data["Analog_input"+id] = value
-                    except Exception as e:
-                        print(f"Error reading analog input {id}: {e}")
-                        data["Analog_input"+id] = "Error reading value"
-
-                print(json.dumps(data, indent=2))
+                for simulator in simulators:
+                    print(f"Reading from {simulator['name']} at {simulator['address']}...")
+                    
+                    # Reading 3 Analog Inputs from each simulator
+                    for x in range(0, 3):
+                        id = str(x)
+                        try:
+                            # Read from the simulator
+                            value = bacnet.read(
+                                f"{simulator['address']} analogInput {id} presentValue")
+                            print(f"{simulator['name']} - Analog input {id} value: {value}")
+                            value = str(value)
+                            data[simulator['name']][f"Analog_input{id}"] = value
+                        except Exception as e:
+                            print(f"Error reading analog input {id} from {simulator['name']}: {e}")
+                            data[simulator['name']][f"Analog_input{id}"] = "Error reading value"
+                
+                # print("\nCurrent data from all devices:")
+                # print(json.dumps(data, indent=2))
+                # print("\n" + "-"*50 + "\n")
                 time.sleep(2)
                 
             except KeyboardInterrupt:
